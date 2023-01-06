@@ -3956,7 +3956,7 @@ void test_wdb_global_update_agent_connection_status_transaction_fail(void **stat
     will_return(__wrap_wdb_begin2, -1);
     expect_string(__wrap__mdebug1, formatted_msg, "Cannot begin transaction");
 
-    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status);
+    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status, 0);
 
     assert_int_equal(result, OS_INVALID);
 }
@@ -3972,7 +3972,7 @@ void test_wdb_global_update_agent_connection_status_cache_fail(void **state)
     will_return(__wrap_wdb_stmt_cache, -1);
     expect_string(__wrap__mdebug1, formatted_msg, "Cannot cache statement");
 
-    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status);
+    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status, 0);
 
     assert_int_equal(result, OS_INVALID);
 }
@@ -3993,7 +3993,7 @@ void test_wdb_global_update_agent_connection_status_bind1_fail(void **state)
     will_return(__wrap_sqlite3_errmsg, "ERROR MESSAGE");
     expect_string(__wrap__merror, formatted_msg, "DB(global) sqlite3_bind_text(): ERROR MESSAGE");
 
-    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status);
+    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status, 0);
 
     assert_int_equal(result, OS_INVALID);
 }
@@ -4017,7 +4017,7 @@ void test_wdb_global_update_agent_connection_status_bind2_fail(void **state)
     will_return(__wrap_sqlite3_errmsg, "ERROR MESSAGE");
 
     expect_string(__wrap__merror, formatted_msg, "DB(global) sqlite3_bind_text(): ERROR MESSAGE");
-    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status);
+    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status, 0);
 
     assert_int_equal(result, OS_INVALID);
 }
@@ -4044,7 +4044,7 @@ void test_wdb_global_update_agent_connection_status_bind3_fail(void **state)
     will_return(__wrap_sqlite3_errmsg, "ERROR MESSAGE");
 
     expect_string(__wrap__merror, formatted_msg, "DB(global) sqlite3_bind_int(): ERROR MESSAGE");
-    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status);
+    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status, 0);
 
     assert_int_equal(result, OS_INVALID);
 }
@@ -4069,12 +4069,15 @@ void test_wdb_global_update_agent_connection_status_bind4_fail(void **state)
     expect_value(__wrap_sqlite3_bind_int, value, 0);
     will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
     expect_value(__wrap_sqlite3_bind_int, index, 4);
+    expect_value(__wrap_sqlite3_bind_int, value, 0);
+    will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
+    expect_value(__wrap_sqlite3_bind_int, index, 5);
     expect_value(__wrap_sqlite3_bind_int, value, 1);
     will_return(__wrap_sqlite3_bind_int, SQLITE_ERROR);
     will_return(__wrap_sqlite3_errmsg, "ERROR MESSAGE");
 
     expect_string(__wrap__merror, formatted_msg, "DB(global) sqlite3_bind_int(): ERROR MESSAGE");
-    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status);
+    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status, 0);
 
     assert_int_equal(result, OS_INVALID);
 }
@@ -4099,6 +4102,9 @@ void test_wdb_global_update_agent_connection_status_step_fail(void **state)
     expect_value(__wrap_sqlite3_bind_int, value, 0);
     will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
     expect_value(__wrap_sqlite3_bind_int, index, 4);
+    expect_value(__wrap_sqlite3_bind_int, value, 0);
+    will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
+    expect_value(__wrap_sqlite3_bind_int, index, 5);
     expect_value(__wrap_sqlite3_bind_int, value, 1);
     will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
 
@@ -4106,7 +4112,7 @@ void test_wdb_global_update_agent_connection_status_step_fail(void **state)
     will_return(__wrap_sqlite3_errmsg, "ERROR MESSAGE");
     expect_string(__wrap__mdebug1, formatted_msg, "SQLite: ERROR MESSAGE");
 
-    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status);
+    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status, 0);
 
     assert_int_equal(result, OS_INVALID);
 }
@@ -4131,11 +4137,14 @@ void test_wdb_global_update_agent_connection_status_success(void **state)
     expect_value(__wrap_sqlite3_bind_int, value, 0);
     will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
     expect_value(__wrap_sqlite3_bind_int, index, 4);
+    expect_value(__wrap_sqlite3_bind_int, value, 0);
+    will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
+    expect_value(__wrap_sqlite3_bind_int, index, 5);
     expect_value(__wrap_sqlite3_bind_int, value, 1);
     will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
     will_return(__wrap_wdb_step, SQLITE_DONE);
 
-    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status);
+    result = wdb_global_update_agent_connection_status(data->wdb, 1, connection_status, sync_status, 0);
 
     assert_int_equal(result, OS_SUCCESS);
 }
@@ -5848,6 +5857,9 @@ void test_wdb_global_get_agents_to_disconnect_ok(void **state)
         expect_value(__wrap_sqlite3_bind_int, value, (time_t)0);
         will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
         expect_value(__wrap_sqlite3_bind_int, index, 4);
+        expect_value(__wrap_sqlite3_bind_int, value, NO_KEEPALIVE);
+        will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
+        expect_value(__wrap_sqlite3_bind_int, index, 5);
         expect_in_range(__wrap_sqlite3_bind_int, value, 0, agents_amount);
         will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
         will_return(__wrap_wdb_step, SQLITE_DONE);
@@ -5903,6 +5915,9 @@ void test_wdb_global_get_agents_to_disconnect_due(void **state)
         expect_value(__wrap_sqlite3_bind_int, value, (time_t)0);
         will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
         expect_value(__wrap_sqlite3_bind_int, index, 4);
+        expect_value(__wrap_sqlite3_bind_int, value, NO_KEEPALIVE);
+        will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
+        expect_value(__wrap_sqlite3_bind_int, index, 5);
         expect_in_range(__wrap_sqlite3_bind_int, value, 0, agents_amount);
         will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
         will_return(__wrap_wdb_step, SQLITE_DONE);
@@ -6185,7 +6200,12 @@ void test_wdb_global_reset_agents_connection_bind_fail(void **state)
     will_return(__wrap_wdb_begin2, 1);
     will_return(__wrap_wdb_stmt_cache, 1);
 
-    expect_value(__wrap_sqlite3_bind_text, pos, 1);
+
+    expect_value(__wrap_sqlite3_bind_int, index, 1);
+    expect_value(__wrap_sqlite3_bind_int, value, RESET_BY_MANAGER);
+    will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
+
+    expect_value(__wrap_sqlite3_bind_text, pos, 2);
     expect_value(__wrap_sqlite3_bind_text, buffer, sync_status);
     will_return(__wrap_sqlite3_bind_text, SQLITE_ERROR);
     will_return(__wrap_sqlite3_errmsg, "ERROR MESSAGE");
@@ -6204,7 +6224,11 @@ void test_wdb_global_reset_agents_step_fail(void **state)
     will_return(__wrap_wdb_begin2, 1);
     will_return(__wrap_wdb_stmt_cache, 1);
 
-    expect_value(__wrap_sqlite3_bind_text, pos, 1);
+    expect_value(__wrap_sqlite3_bind_int, index, 1);
+    expect_value(__wrap_sqlite3_bind_int, value, RESET_BY_MANAGER);
+    will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
+
+    expect_value(__wrap_sqlite3_bind_text, pos, 2);
     expect_value(__wrap_sqlite3_bind_text, buffer, sync_status);
     will_return(__wrap_sqlite3_bind_text, SQLITE_OK);
 
@@ -6224,7 +6248,10 @@ void test_wdb_global_reset_agents_connection_success(void **state)
 
     will_return(__wrap_wdb_begin2, 1);
     will_return(__wrap_wdb_stmt_cache, 1);
-    expect_value(__wrap_sqlite3_bind_text, pos, 1);
+    expect_value(__wrap_sqlite3_bind_int, index, 1);
+    expect_value(__wrap_sqlite3_bind_int, value, RESET_BY_MANAGER);
+    will_return(__wrap_sqlite3_bind_int, SQLITE_OK);
+    expect_value(__wrap_sqlite3_bind_text, pos, 2);
     expect_value(__wrap_sqlite3_bind_text, buffer, sync_status);
     will_return(__wrap_sqlite3_bind_text, SQLITE_OK);
     will_return(__wrap_wdb_step, SQLITE_DONE);
