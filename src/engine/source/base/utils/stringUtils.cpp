@@ -9,7 +9,7 @@
 
 #include "stringUtils.hpp"
 
-namespace utils::string
+namespace base::utils::string
 {
 
 std::vector<std::string> split(std::string_view str, const char delimiter)
@@ -47,4 +47,4 @@ std::string join(const std::vector<std::string>& strVector,
 
     return strResult;
 }
-} // namespace utils::string
+} // namespace base::utils::string

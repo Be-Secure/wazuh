@@ -152,7 +152,7 @@ Expression operationBuilder(const std::any& definition,
         auto helperString = value.getString().value().substr(1);
 
         helperArgs =
-            utils::string::split(helperString, syntax::FUNCTION_HELPER_ARG_ANCHOR);
+            base::utils::string::split(helperString, syntax::FUNCTION_HELPER_ARG_ANCHOR);
         helperName = helperArgs[0];
         helperArgs.erase(helperArgs.begin());
 
