@@ -459,14 +459,13 @@ OSSEC_LINK    =${QUIET_LINK}${MING_BASE}ar -crus
 OSSEC_RANLIB  =${QUIET_RANLIB}${MING_BASE}ranlib
 OSSEC_WINDRES =${QUIET_CCBIN}${MING_BASE}windres
 
-
 ifneq (,$(filter ${USE_INOTIFY},YES auto yes y Y 1))
-	DEFINES+=-DINOTIFY_ENABLED
-	ifeq (${uname_S},FreeBSD)
-		OSSEC_LDFLAGS+=-L/usr/local/lib -I/usr/local/include
-		OSSEC_LIBS+=-linotify
-		OSSEC_CFLAGS+=-I/usr/local/include
-	endif
+    DEFINES+=-DINOTIFY_ENABLED
+    ifneq (,$(filter ${uname_S},Darwin OpenBSD FreeBSD NetBSD))
+            OSSEC_LDFLAGS+=-L${EXTERNAL_LIBINOTIFY}.libs
+            OSSEC_LIBS+=-L${EXTERNAL_LIBINOTIFY}.libs
+            OSSEC_CFLAGS+=-I${EXTERNAL_LIBINOTIFY}
+    endif
 endif
 
 ifneq (,$(filter ${USE_BIG_ENDIAN},YES yes y Y 1))
@@ -877,6 +876,7 @@ LIBPCRE2_LIB = $(EXTERNAL_LIBPCRE2).libs/libpcre2-8.a
 POPT_LIB = $(EXTERNAL_POPT)build/output/src/.libs/libpopt.a
 RPM_LIB = $(EXTERNAL_RPM)builddir/librpm.a
 JEMALLOC_LIB = $(EXTERNAL_JEMALLOC)lib/libjemalloc.so.2
+LIBINOTIFY_LIB = $(EXTERNAL_LIBINOTIFY).libs/libinotify.a
 
 EXTERNAL_LIBS := $(JSON_LIB) $(ZLIB_LIB) $(OPENSSL_LIB) $(CRYPTO_LIB) $(SQLITE_LIB) $(LIBYAML_LIB) $(LIBPCRE2_LIB)
 
@@ -915,7 +915,7 @@ endif
 
 
 .PHONY: external test_external
-external: test_external $(EXTERNAL_LIBS) $(JEMALLOC_LIB)
+external: test_external $(LIBINOTIFY_LIB) $(EXTERNAL_LIBS) $(JEMALLOC_LIB)
 
 ifneq (,$(filter ${TEST},YES yes y Y 1))
 external: build_gtest
@@ -1200,6 +1200,13 @@ ${RPM_LIB}: ${RPM_BUILD_DIR}/Makefile
 
 ${RPM_BUILD_DIR}/Makefile: ${OPENSSL_LIB} ${ZLIB_LIB} ${POPT_LIB} ${SQLITE_LIB}
 	mkdir -p ${RPM_BUILD_DIR} && cd ${RPM_BUILD_DIR} && cmake -E env CFLAGS="${RPM_CFLAGS}" CC=${RPM_CC} cmake ..
+
+#### Libinotity ##########
+
+$(LIBINOTIFY_LIB):
+ifneq (,$(filter ${uname_S},Darwin OpenBSD FreeBSD NetBSD))
+	cd ${EXTERNAL_LIBINOTIFY} && autoreconf -fvi && ./configure && ${MAKE}
+endif
 
 #### jemalloc ##########
 
